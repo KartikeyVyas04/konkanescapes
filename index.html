@@ -3,384 +3,344 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konkan Escapes | Interactive Map</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
-    
+    <title>Konkan Escapes - Explore Maharashtra Forts & Coast</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Lato', 'sans-serif'],
-                        serif: ['Cinzel', 'serif'],
-                    },
-                    colors: {
-                        saffron: '#FF9933',
-                        fort: '#4a4036',
-                        ocean: '#006994',
-                    }
-                }
-            }
-        }
-    </script>
-
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom Map Styles */
-        .maharashtra-path {
-            fill: #e5e7eb;
-            stroke: #9ca3af;
-            stroke-width: 1.5;
-            transition: all 0.5s ease;
-        }
-        .maharashtra-path:hover {
-            fill: #d1d5db;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .map-container { height: 100vh; position: relative; overflow: hidden; }
+        #maha-map { width: 100%; height: 100%; fill: #f8fafc; stroke: #1e293b; stroke-width: 2; }
+        .marker { cursor: pointer; transition: all 0.3s ease; }
+        .fort-marker { fill: #059669; stroke: #047857; stroke-width: 2; animation: pulse 2s infinite; }
+        .beach-marker { fill: #0ea5e9; stroke: #0369a1; stroke-width: 2; animation: wave 3s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+        @keyframes wave { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .waves { animation: wave-motion 10s linear infinite; }
+        @keyframes wave-motion { 0% { transform: translateX(0); } 100% { transform: translateX(100px); } }
+        .mist { animation: mist-move 20s linear infinite; }
+        @keyframes mist-move { 0% { transform: translateX(-100px); } 100% { transform: translateX(100vw); } }
+        .hover-info { position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 8px; font-size: 14px; pointer-events: none; transform: translate(-50%, -100%); white-space: nowrap; }
     </style>
 </head>
-<body class="bg-stone-50 text-gray-900 overflow-x-hidden">
-    <div id="root"></div>
+<body class="bg-gradient-to-br from-teal-900 via-blue-900 to-green-800 text-white overflow-x-hidden">
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { motion, AnimatePresence } = window.Motion;
-        
-        // --- DATA: The Heart of the App ---
-        const locations = [
-            {
-                id: 'raigad',
-                name: "Raigad Fort",
-                type: "fort",
-                coords: { top: "45%", left: "35%" }, // Approximate position on map
-                tagline: "The Capital of Swarajya",
-                image: "https://images.unsplash.com/photo-1597034954492-36526ebc8f62?q=80&w=2600&auto=format&fit=crop",
-                history: "Raigad is a hill fort situated in Mahad, Raigad district of Maharashtra, India. It was the capital of the Maratha Empire under the rule of Chhatrapati Shivaji Maharaj. The fort rises 820 metres (2,700 ft) above sea level in the Sahyadri mountain range. There are approximately 1737 steps leading to the fort.",
-                trekPlan: {
-                    difficulty: "Moderate",
-                    duration: "2.5 Hours (Climb)",
-                    bestTime: "June to Feb",
-                    itinerary: [
-                        "05:00 AM: Start from Base Village (Pachad)",
-                        "07:30 AM: Reach Maha Darwaja",
-                        "08:00 AM: Darshan of Shivaji Maharaj Samadhi",
-                        "10:00 AM: Explore Takmak Tok & Market",
-                        "01:00 PM: Descent / Ropeway down"
-                    ]
-                }
-            },
-            {
-                id: 'tarkarli',
-                name: "Tarkarli Beach",
-                type: "beach",
-                coords: { top: "85%", left: "38%" },
-                tagline: "The Coral Coast",
-                image: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?q=80&w=2574&auto=format&fit=crop",
-                history: "Tarkarli is a village in Malvan taluka in Sindhudurg district. Known for its white sands and clear waters, it is the hub of Scuba diving in Maharashtra. The nearby Sindhudurg Fort, built by Shivaji Maharaj in the middle of the sea, stands as a sentinel of the coast.",
-                trekPlan: {
-                    difficulty: "Easy (Leisure)",
-                    duration: "3 Days Trip",
-                    bestTime: "Oct to May",
-                    itinerary: [
-                        "Day 1: Arrival & Sunset at Devbagh Sangam",
-                        "Day 2: Scuba Diving & Sindhudurg Fort Tour",
-                        "Day 3: Water Sports & Dolphin Safari"
-                    ]
-                }
-            },
-            {
-                id: 'harihar',
-                name: "Harihar Fort",
-                type: "fort",
-                coords: { top: "20%", left: "40%" },
-                tagline: "The Vertical Steps",
-                image: "https://images.unsplash.com/photo-1643194018828-569d6614457e?q=80&w=2670&auto=format&fit=crop",
-                history: "Harihar Fort lies in the Trimbakeshwar range. It is famous for its 80-degree vertical rock-cut steps. It was built to look over the trade route through Gonda Ghat. It was surrendered to the British in 1818.",
-                trekPlan: {
-                    difficulty: "Hard (Technical)",
-                    duration: "3 Hours",
-                    bestTime: "Winter",
-                    itinerary: [
-                        "06:00 AM: Base Village (Nirgudpada)",
-                        "08:00 AM: Reach the Vertical Steps",
-                        "09:30 AM: Summit & Plateau Exploration",
-                        "12:00 PM: Lunch at Base"
-                    ]
-                }
-            },
-            {
-                id: 'rajmachi',
-                name: "Rajmachi",
-                type: "fort",
-                coords: { top: "35%", left: "38%" }, // Lonavala region
-                tagline: "The Fireflies Sanctuary",
-                image: "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?q=80&w=2574&auto=format&fit=crop",
-                history: "Rajmachi is famous for the pre-monsoon fireflies festival. It consists of two twin fortresses Shriwardhan and Manaranjan. It is a very famous trek in the Lonavala region.",
-                trekPlan: {
-                    difficulty: "Easy to Moderate",
-                    duration: "4 Hours (Long Walk)",
-                    bestTime: "Monsoon & June (Fireflies)",
-                    itinerary: [
-                        "Day 1: Night Trek start from Lonavala",
-                        "Day 1: Camping at Udhewadi Village",
-                        "Day 2: Sunrise at Shrivardhan Fort",
-                        "Day 2: Return via Kondhane Caves"
-                    ]
-                }
-            }
-        ];
+    <!-- Hero Section: Map-Led -->
+    <section class="map-container relative">
+        <!-- Animated SVG Map -->
+        <svg id="maha-map" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid meet">
+            <!-- Simplified Maharashtra outline (approximated for demo, inspired by web:1 web:6) -->
+            <path d="M100,100 L200,50 L300,100 L400,80 L500,120 L600,100 L700,150 L750,200 L700,300 L650,400 L600,450 L550,500 L500,520 L450,550 L400,580 L350,600 L300,620 L250,650 L200,680 L150,700 L100,720 L100,100 Z" fill="#f0f9ff" stroke="#0f172a" stroke-width="3"/>
+            <!-- Coastline waves (Konkan) -->
+            <path class="waves" d="M100,720 Q150,740 200,730 Q250,745 300,735 Q350,750 400,740 Q450,755 500,745 Q550,760 600,750 L700,750 L750,760 L700,770 Q600,780 500,775 Q450,785 400,780 Q350,790 300,785 Q250,795 200,790 Q150,800 100,795 L100,720" fill="url(#waveGrad)" opacity="0.6"/>
+            <defs>
+                <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#0ea5e9"/>
+                    <stop offset="100%" stop-color="#0284c7"/>
+                </linearGradient>
+                <!-- Mist over Sahyadris -->
+                <path class="mist" d="M200,200 Q300,250 400,220 Q500,270 600,240" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="20" stroke-linecap="round"/>
+            </defs>
+            <!-- Markers (positions approximated: Sinhagad near Pune ~west central, Alibaug Konkan coast) -->
+            <!-- Fort: Sinhagad (Pune area) -->
+            <circle class="marker fort-marker" cx="350" cy="450" r="8" data-type="fort" data-name="Sinhagad Fort" data-page="sinhagad"/>
+            <!-- Beach: Alibaug -->
+            <circle class="marker beach-marker" cx="150" cy="650" r="8" data-type="beach" data-name="Alibaug Beach" data-page="alibaug"/>
+            <!-- More markers for demo -->
+            <circle class="marker fort-marker" cx="500" cy="350" r="8" data-type="fort" data-name="Sindhudurg Fort" data-page="sindhudurg"/>
+            <circle class="marker beach-marker" cx="250" cy="680" r="8" data-type="beach" data-name="Tarkarli Beach" data-page="tarkarli"/>
+        </svg>
+        <!-- Overlay Content -->
+        <div class="absolute top-20 left-1/2 transform -translate-x-1/2 text-center z-10 px-4">
+            <h1 class="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-teal-300 to-blue-300 bg-clip-text text-transparent drop-shadow-2xl">Explore Maharashtra<br>Through Its Forts & Coast</h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto opacity-90">Discover iconic Sahyadri treks and Konkan escapes through an interactive map experience.</p>
+            <div class="space-x-4">
+                <button onclick="scrollToExplore()" class="bg-teal-500 hover:bg-teal-600 px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300 transform hover:scale-105">Explore Forts</button>
+                <button onclick="scrollToExplore()" class="border border-white/50 hover:border-white px-8 py-4 rounded-full text-lg font-semibold transition-all duration-300">Plan My Trek</button>
+            </div>
+        </div>
+        <!-- Hover Info -->
+        <div id="hover-info" class="hover-info hidden"></div>
+    </section>
 
-        // --- COMPONENTS ---
+    <!-- Introductory Content -->
+    <section class="py-24 px-8 md:px-16 bg-white/10 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto text-center">
+            <p class="text-xl md:text-2xl mb-12 leading-relaxed">Konkan Escapes brings Maharashtra’s most iconic forts and coastal experiences together in one interactive journey. Explore destinations visually, learn their stories, and plan your next trek — all in one place.</p>[web:2][web:3]
+        </div>
+    </section>
 
-        // 1. The Map Component
-        const MaharashtraMap = ({ onLocationClick }) => {
-            return (
-                <div className="relative w-full h-[600px] md:h-[700px] bg-blue-50/50 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
-                    {/* Background Texture */}
-                    <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')]"></div>
-                    
-                    {/* Simplified SVG Map Representation */}
-                    <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0 drop-shadow-xl" preserveAspectRatio="none">
-                        {/* Abstract shape representing MH coastline and landmass */}
-                        <path d="M 30,10 L 60,15 L 75,30 L 70,60 L 40,90 L 30,80 L 25,50 Z" className="fill-stone-200 stroke-stone-300 stroke-2" />
-                        {/* Coastline */}
-                        <path d="M 30,10 Q 25,30 25,50 T 30,80" fill="none" stroke="#006994" strokeWidth="1" strokeDasharray="2 2" />
-                    </svg>
+    <!-- Experience Categories -->
+    <section class="py-20 px-8 md:px-16">
+        <h2 class="text-4xl font-bold text-center mb-16">What You Can Explore</h2>
+        <div class="grid md:grid-cols-3 lg:grid-cols-5 gap-8 max-w-6xl mx-auto">
+            <div class="text-center p-6 hover:scale-105 transition-transform duration-300 group">
+                <div class="w-16 h-16 bg-teal-500 rounded-2xl mx-auto mb-4 flex items-center justify-center font-bold text-2xl">🏰</div>
+                <h3 class="font-semibold mb-2">Fort Treks & Trails</h3>
+                <p>Scale historic Sahyadri peaks</p>
+            </div>
+            <div class="text-center p-6 hover:scale-105 transition-transform duration-300 group">
+                <div class="w-16 h-16 bg-green-500 rounded-2xl mx-auto mb-4 flex items-center justify-center font-bold text-2xl">🌧️</div>
+                <h3 class="font-semibold mb-2">Monsoon & Weekend Treks</h3>
+                <p>Quick escapes from the city</p>
+            </div>
+            <div class="text-center p-6 hover:scale-105 transition-transform duration-300 group">
+                <div class="w-16 h-16 bg-blue-500 rounded-2xl mx-auto mb-4 flex items-center justify-center font-bold text-2xl">🏖️</div>
+                <h3 class="font-semibold mb-2">Konkan Coastal Escapes</h3>
+                <p>Beaches and sea forts</p>
+            </div>
+            <div class="text-center p-6 hover:scale-105 transition-transform duration-300 group">
+                <div class="w-16 h-16 bg-orange-500 rounded-2xl mx-auto mb-4 flex items-center justify-center font-bold text-2xl">⛺</div>
+                <h3 class="font-semibold mb-2">Camping Experiences</h3>
+                <p>Night under the stars</p>
+            </div>
+            <div class="text-center p-6 hover:scale-105 transition-transform duration-300 group">
+                <div class="w-16 h-16 bg-purple-500 rounded-2xl mx-auto mb-4 flex items-center justify-center font-bold text-2xl">👥</div>
+                <h3 class="font-semibold mb-2">Group Trips & Events</h3>
+                <p>Adventure with friends</p>
+            </div>
+        </div>
+    </section>
 
-                    {/* Dynamic Pins */}
-                    {locations.map((loc) => (
-                        <motion.button
-                            key={loc.id}
-                            className="absolute transform -translate-x-1/2 -translate-y-1/2 group z-10"
-                            style={{ top: loc.coords.top, left: loc.coords.left }}
-                            onClick={() => onLocationClick(loc)}
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            whileHover={{ scale: 1.2 }}
-                        >
-                            {/* Pulse Effect */}
-                            <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${loc.type === 'fort' ? 'bg-orange-400' : 'bg-blue-400'}`}></span>
-                            
-                            {/* The Pin Icon */}
-                            <div className={`relative inline-flex items-center justify-center w-8 h-8 md:w-12 md:h-12 text-white rounded-full shadow-lg border-2 border-white ${loc.type === 'fort' ? 'bg-orange-600' : 'bg-blue-600'}`}>
-                                <i data-lucide={loc.type === 'fort' ? "castle" : "waves"} className="w-4 h-4 md:w-6 md:h-6"></i>
-                            </div>
+    <!-- Featured Locations -->
+    <section class="py-20 px-8 md:px-16 bg-white/5">
+        <h2 class="text-4xl font-bold text-center mb-16">Featured Locations</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer" onclick="showDetail('sinhagad')">
+                <div class="w-full h-32 bg-gradient-to-br from-teal-400 to-green-500 rounded-xl mb-4 flex items-end justify-center text-white font-bold text-xl">🏰</div>
+                <h3 class="font-bold text-xl mb-2">Sinhagad Fort</h3>
+                <p class="text-sm opacity-75 mb-2">Fort • Moderate Difficulty</p>
+                <button class="text-teal-400 font-semibold">View on Map</button>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer" onclick="showDetail('alibaug')">
+                <div class="w-full h-32 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl mb-4 flex items-end justify-center text-white font-bold text-xl">🏖️</div>
+                <h3 class="font-bold text-xl mb-2">Alibaug Beach</h3>
+                <p class="text-sm opacity-75 mb-2">Beach • Easy Access</p>
+                <button class="text-teal-400 font-semibold">View on Map</button>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer" onclick="showDetail('sindhudurg')">
+                <div class="w-full h-32 bg-gradient-to-br from-teal-500 to-emerald-500 rounded-xl mb-4 flex items-end justify-center text-white font-bold text-xl">🏰</div>
+                <h3 class="font-bold text-xl mb-2">Sindhudurg Fort</h3>
+                <p class="text-sm opacity-75 mb-2">Sea Fort • Challenging</p>
+                <button class="text-teal-400 font-semibold">View on Map</button>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-6 hover:scale-105 transition-all duration-300 cursor-pointer">
+                <div class="w-full h-32 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl mb-4 flex items-end justify-center text-white font-bold text-xl">🏖️</div>
+                <h3 class="font-bold text-xl mb-2">Tarkarli Beach</h3>
+                <p class="text-sm opacity-75 mb-2">Beach • Pristine Waters</p>
+                <button class="text-teal-400 font-semibold">View on Map</button>
+            </div>
+        </div>[web:2][web:3][web:4][web:5][web:7][web:8]
+    </section>
 
-                            {/* Tooltip */}
-                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                                {loc.name}
-                            </div>
-                        </motion.button>
-                    ))}
+    <!-- Why Konkan Escapes -->
+    <section class="py-20 px-8 md:px-16">
+        <h2 class="text-4xl font-bold text-center mb-16">Why Choose Konkan Escapes</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-4xl mx-auto">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-teal-500 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl font-bold">🗺️</div>
+                <h3 class="font-semibold mb-2">Curated Routes</h3>
+                <p>Verified locations with local insights</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-green-500 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl font-bold">🧑‍🔧</div>
+                <h3 class="font-semibold mb-2">Local Guides</h3>
+                <p>On-ground expertise you can trust</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-blue-500 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl font-bold">🛡️️</div>
+                <h3 class="font-semibold mb-2">Safety First</h3>
+                <p>Comprehensive planning for peace of mind</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-purple-500 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl font-bold">💰</div>
+                <h3 class="font-semibold mb-2">Transparent Pricing</h3>
+                <p>Clear itineraries, no hidden fees</p>
+            </div>
+        </div>
+    </section>
 
-                    {/* Floating Clouds Animation */}
-                    <motion.div 
-                        className="absolute top-10 left-0 text-white/40"
-                        animate={{ x: [0, 100, 0] }}
-                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    >
-                        <i data-lucide="cloud" size={64}></i>
-                    </motion.div>
-                     <motion.div 
-                        className="absolute top-40 right-10 text-white/40"
-                        animate={{ x: [0, -50, 0] }}
-                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    >
-                        <i data-lucide="cloud" size={48}></i>
-                    </motion.div>
+    <!-- How It Works -->
+    <section class="py-20 px-8 md:px-16 bg-white/5">
+        <h2 class="text-4xl font-bold text-center mb-16">How It Works</h2>
+        <div class="max-w-4xl mx-auto space-y-8">
+            <div class="flex items-start space-x-6">
+                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center font-bold text-xl shrink-0">1</div>
+                <div>
+                    <h3 class="font-bold text-xl mb-2">Explore on the Map</h3>
+                    <p>Hover and click forts or beaches to discover stories</p>
                 </div>
-            );
-        };
+            </div>
+            <div class="flex items-start space-x-6">
+                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center font-bold text-xl shrink-0">2</div>
+                <div>
+                    <h3 class="font-bold text-xl mb-2">Learn History & Details</h3>
+                    <p>Dive into engaging narratives and trek info</p>
+                </div>
+            </div>
+            <div class="flex items-start space-x-6">
+                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center font-bold text-xl shrink-0">3</div>
+                <div>
+                    <h3 class="font-bold text-xl mb-2">Plan & Book</h3>
+                    <p>One-click to chat, book, or customize your adventure</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // 2. The Detail Page Component
-        const DetailPage = ({ location, onBack }) => {
-            return (
-                <motion.div 
-                    initial={{ opacity: 0, x: 100 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 100 }}
-                    className="min-h-screen bg-white relative z-20"
-                >
-                    {/* Parallax Hero */}
-                    <div className="relative h-[50vh] overflow-hidden">
-                        <img src={location.image} alt={location.name} className="w-full h-full object-cover fixed top-0 left-0 -z-10" />
-                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-4">
-                            <motion.h1 
-                                initial={{ y: 20, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                className="font-serif text-5xl md:text-7xl text-white font-bold mb-2"
-                            >
-                                {location.name}
-                            </motion.h1>
-                            <p className="text-orange-300 text-xl tracking-widest uppercase font-bold">{location.tagline}</p>
-                        </div>
-                        <button 
-                            onClick={onBack}
-                            className="absolute top-6 left-6 bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 p-3 rounded-full transition-all border border-white/30"
-                        >
-                            <i data-lucide="arrow-left" size={24}></i>
-                        </button>
-                    </div>
+    <!-- Social Proof -->
+    <section class="py-20 px-8 md:px-16">
+        <h2 class="text-4xl font-bold text-center mb-16">What Travelers Say</h2>
+        <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-8">
+                <p class="mb-4">"Sinhagad trek was epic! The history page made it come alive."</p>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-teal-500 rounded-full mr-3"></div>
+                    <div><strong>Priya, Pune</strong></div>
+                </div>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-8">
+                <p class="mb-4">"Alibaug felt like a hidden gem. Perfect weekend escape."</p>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-500 rounded-full mr-3"></div>
+                    <div><strong>Rahul, Mumbai</strong></div>
+                </div>
+            </div>
+            <div class="bg-white/20 backdrop-blur-md rounded-2xl p-8">
+                <p class="mb-4">"Loved the map animations. Booked my next trek instantly!"</p>
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-500 rounded-full mr-3"></div>
+                    <div><strong>Anita, Nagpur</strong></div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                    {/* Content Container */}
-                    <div className="bg-white relative rounded-t-[3rem] -mt-10 p-6 md:p-12 shadow-2xl min-h-screen">
-                        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-12">
-                            
-                            {/* Left Col: History */}
-                            <div className="md:col-span-2 space-y-8">
-                                <div>
-                                    <h2 className="font-serif text-3xl font-bold text-gray-900 mb-4 flex items-center gap-3">
-                                        <i data-lucide="scroll" className="text-orange-600"></i> History
-                                    </h2>
-                                    <p className="text-gray-600 leading-relaxed text-lg">
-                                        {location.history}
-                                    </p>
-                                </div>
+    <!-- Final CTA -->
+    <section class="py-24 px-8 md:px-16 text-center bg-gradient-to-r from-teal-600 to-blue-600">
+        <h2 class="text-4xl md:text-5xl font-bold mb-6">Your Next Trek Starts on the Map</h2>
+        <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">Choose a fort or trail, and we’ll handle the planning.</p>
+        <div class="space-x-4">
+            <a href="https://wa.me/919999999999?text=Hi%20Konkan%20Escapes%2C%20let's%20plan%20my%20trek!" class="bg-white text-teal-600 px-10 py-5 rounded-full text-xl font-semibold hover:bg-gray-100 transition-all duration-300 inline-block">Chat on WhatsApp</a>
+            <button class="border-2 border-white px-10 py-5 rounded-full text-xl font-semibold hover:bg-white hover:text-teal-600 transition-all duration-300">Request a Call Back</button>
+        </div>
+    </section>
 
-                                <div>
-                                    <h2 className="font-serif text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                                        <i data-lucide="map" className="text-orange-600"></i> The Plan
-                                    </h2>
-                                    <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
-                                        <ul className="space-y-4">
-                                            {location.trekPlan.itinerary.map((step, idx) => (
-                                                <li key={idx} className="flex gap-4 items-start">
-                                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">
-                                                        {idx + 1}
-                                                    </div>
-                                                    <p className="text-gray-700 font-medium">{step}</p>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
+    <!-- Detail Page Overlay (Sample Fort: Sinhagad) -->
+    <div id="detail-overlay" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-8">
+        <div id="detail-content" class="max-w-4xl max-h-[90vh] overflow-y-auto bg-white/95 text-gray-900 rounded-3xl shadow-2xl">
+            <!-- Sinhagad Fort Content -->
+            <div id="sinhagad-page" class="p-12">
+                <button onclick="closeDetail()" class="absolute top-6 right-12 text-3xl font-bold">&times;</button>
+                <div class="hero bg-gradient-to-br from-teal-500 to-green-600 text-white rounded-t-3xl -mt-12 pt-16 pb-20 px-12 text-center">
+                    <h1 class="text-5xl font-bold mb-4">Sinhagad Fort</h1>
+                    <p class="text-2xl opacity-90">Lion's Fort - Pune's Iconic Trek</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-12 mt-12">
+                    <!-- History & Story -->
+                    <div>
+                        <h2 class="text-3xl font-bold mb-8 text-teal-700">History & Legend</h2>
+                        <p class="mb-6 leading-relaxed">Perched atop the Sahyadri mountains, Sinhagad (formerly Kondhana) was pivotal in Maratha history. In 1670, Tanaji Malusare scaled sheer cliffs using a lizard (Ghorpad) to recapture it from Mughals in a daring night raid. Shivaji mourned, saying "Gad aala, pan sinh gela" – The fort is won, but the lion is lost. This 760m high fort offers views of Rajgad and Purandar.[web:4][page:1][web:9]</p>
+                        <!-- Timeline -->
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-4 p-4 bg-gray-100 rounded-xl">
+                                <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
+                                <span>1647: Shivaji gains control</span>
                             </div>
-
-                            {/* Right Col: Info Card & Booking */}
-                            <div className="md:col-span-1">
-                                <div className="sticky top-8 bg-gray-900 text-white p-8 rounded-3xl shadow-xl">
-                                    <h3 className="font-serif text-2xl font-bold mb-6">Trip Details</h3>
-                                    
-                                    <div className="space-y-6 mb-8">
-                                        <div>
-                                            <p className="text-gray-400 text-sm uppercase">Difficulty</p>
-                                            <p className="text-lg font-bold flex items-center gap-2">
-                                                <i data-lucide="bar-chart" size={16} className="text-orange-500"></i> {location.trekPlan.difficulty}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-400 text-sm uppercase">Duration</p>
-                                            <p className="text-lg font-bold flex items-center gap-2">
-                                                <i data-lucide="clock" size={16} className="text-orange-500"></i> {location.trekPlan.duration}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-gray-400 text-sm uppercase">Best Time</p>
-                                            <p className="text-lg font-bold flex items-center gap-2">
-                                                <i data-lucide="sun" size={16} className="text-orange-500"></i> {location.trekPlan.bestTime}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <a 
-                                        href={`https://wa.me/919307797490?text=I am interested in ${location.name}`}
-                                        target="_blank"
-                                        className="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-center transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <i data-lucide="message-circle"></i> Plan Now
-                                    </a>
-                                    <p className="text-center text-xs text-gray-500 mt-3">Instant confirmation via WhatsApp</p>
-                                </div>
+                            <div class="flex items-center space-x-4 p-4 bg-gray-100 rounded-xl">
+                                <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
+                                <span>1670: Battle of Sinhagad</span>
                             </div>
-
+                            <div class="flex items-center space-x-4 p-4 bg-gray-100 rounded-xl">
+                                <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
+                                <span>1817: British capture</span>
+                            </div>
                         </div>
                     </div>
-                </motion.div>
-            );
-        };
+                    <!-- Trek Planning -->
+                    <div>
+                        <h2 class="text-3xl font-bold mb-8 text-teal-700">Trek Details</h2>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Difficulty</label>
+                                <span class="inline-block px-4 py-2 bg-green-100 text-green-800 rounded-full font-semibold">Moderate</span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Duration</label>
+                                <span>4-6 hours round trip</span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Best Season</label>
+                                <span>Oct - May (Monsoon for lush views)</span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Base Village</label>
+                                <span>Donje Phata (road access available)</span>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Inclusions</label>
+                                <ul class="list-disc pl-5 space-y-1">
+                                    <li>Local guide</li>
+                                    <li>Meals & water</li>
+                                    <li>Transport from Pune</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-12 space-x-4">
+                            <a href="https://wa.me/919999999999?text=Book%20Sinhagad%20Trek" class="bg-teal-600 text-white px-8 py-4 rounded-2xl font-semibold hover:bg-teal-700 block text-center mb-4">Book This Trek</a>
+                            <a href="https://wa.me/919999999999?text=Hi%2C%20Sinhagad%20details" class="border border-teal-600 text-teal-600 px-8 py-4 rounded-2xl font-semibold hover:bg-teal-600 hover:text-white block text-center">Chat on WhatsApp</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Placeholder for other pages -->
+            <div id="alibaug-page" class="p-12 hidden">
+                <!-- Beach content would go here, similar structure [web:5][web:10] -->
+                <h1>Alibaug Beach Details</h1>
+                <p>Beach-focused content: Water sports, black sands, nearby Kolaba Fort. Best Oct-Mar, easy access from Mumbai.</p>
+            </div>
+        </div>
+    </div>
 
-        // --- MAIN APP ---
-        const App = () => {
-            const [selectedLocation, setSelectedLocation] = useState(null);
+    <script>
+        // Map Interactions
+        const map = document.getElementById('maha-map');
+        const hoverInfo = document.getElementById('hover-info');
+        const markers = map.querySelectorAll('.marker');
 
-            // Re-run icons when views change
-            useEffect(() => {
-                lucide.createIcons();
+        markers.forEach(marker => {
+            marker.addEventListener('mouseenter', (e) => {
+                const name = marker.dataset.name;
+                hoverInfo.textContent = name;
+                hoverInfo.style.left = e.target.cx.baseVal.value + 'px';
+                hoverInfo.style.top = e.target.cy.baseVal.value + 'px';
+                hoverInfo.classList.remove('hidden');
             });
+            marker.addEventListener('mouseleave', () => hoverInfo.classList.add('hidden'));
+            marker.addEventListener('click', (e) => {
+                showDetail(marker.dataset.page);
+            });
+        });
 
-            return (
-                <div className="font-sans min-h-screen bg-stone-50">
-                    <AnimatePresence mode="wait">
-                        {/* VIEW 1: LANDING & MAP */}
-                        {!selectedLocation && (
-                            <motion.div 
-                                key="landing"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0, scale: 0.95 }}
-                                className="max-w-7xl mx-auto px-4 py-8"
-                            >
-                                {/* Header */}
-                                <header className="text-center mb-12 mt-8">
-                                    <h1 className="font-serif text-5xl md:text-6xl font-bold text-gray-900 mb-4">
-                                        Explore <span className="text-orange-600">Maharashtra</span>
-                                    </h1>
-                                    <p className="text-xl text-gray-500 max-w-2xl mx-auto">
-                                        Click on the interactive map below to discover the history and plan your next adventure to the great forts and beaches.
-                                    </p>
-                                </header>
+        function showDetail(page) {
+            document.getElementById('detail-overlay').classList.remove('hidden');
+            // Switch pages if multiple
+            document.querySelectorAll('#detail-content > div').forEach(div => div.classList.add('hidden'));
+            document.getElementById(page + '-page').classList.remove('hidden');
+        }
 
-                                {/* The Interactive Map Container */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                                    <div className="lg:col-span-8">
-                                        <MaharashtraMap onLocationClick={setSelectedLocation} />
-                                    </div>
-                                    
-                                    {/* Sidebar Legend */}
-                                    <div className="lg:col-span-4 space-y-6">
-                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-stone-100">
-                                            <h3 className="font-bold text-lg mb-4">Legend</h3>
-                                            <div className="flex items-center gap-4 mb-3">
-                                                <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white"><i data-lucide="castle" size={16}></i></div>
-                                                <span>Historic Forts</span>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white"><i data-lucide="waves" size={16}></i></div>
-                                                <span>Beaches & Diving</span>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100">
-                                            <h3 className="font-serif text-xl font-bold text-orange-800 mb-2">Did You Know?</h3>
-                                            <p className="text-orange-700 italic">"Maharashtra has over 350 forts, the highest number in any state in India. Most were built by Chhatrapati Shivaji Maharaj."</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        )}
+        function closeDetail() {
+            document.getElementById('detail-overlay').classList.add('hidden');
+        }
 
-                        {/* VIEW 2: DETAILS PAGE */}
-                        {selectedLocation && (
-                            <DetailPage 
-                                key="detail"
-                                location={selectedLocation} 
-                                onBack={() => setSelectedLocation(null)} 
-                            />
-                        )}
-                    </AnimatePresence>
-                </div>
-            );
-        };
+        function scrollToExplore() {
+            document.querySelector('section:nth-of-type(2)').scrollIntoView({ behavior: 'smooth' });
+        }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        // Close overlay on escape or outside click
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDetail(); });
+        document.getElementById('detail-overlay').addEventListener('click', (e) => {
+            if (e.target.id === 'detail-overlay') closeDetail();
+        });
     </script>
 </body>
 </html>
