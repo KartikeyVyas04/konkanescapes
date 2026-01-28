@@ -1,171 +1,386 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Konkan Escapes – Explore Maharashtra</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konkan Escapes | Interactive Map</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
+                    },
+                    colors: {
+                        saffron: '#FF9933',
+                        fort: '#4a4036',
+                        ocean: '#006994',
+                    }
+                }
+            }
+        }
+    </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
-
-    body {
-      background: radial-gradient(circle at top, #0f766e, #022c22);
-      color: #fff;
-      overflow: hidden;
-    }
-
-    /* HEADER */
-    header {
-      position: absolute;
-      top: 20px;
-      left: 30px;
-      z-index: 10;
-    }
-
-    header h1 {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    header p {
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    /* MAP CONTAINER */
-    .map-wrapper {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    svg {
-      width: 70vw;
-      max-width: 900px;
-    }
-
-    /* MAHARASHTRA SHAPE */
-    .maha {
-      fill: #0d9488;
-      opacity: 0.25;
-      stroke: #5eead4;
-      stroke-width: 2;
-      animation: glow 4s infinite alternate;
-    }
-
-    @keyframes glow {
-      from { opacity: 0.25; }
-      to { opacity: 0.4; }
-    }
-
-    /* MARKERS */
-    .marker {
-      fill: #facc15;
-      cursor: pointer;
-      animation: pulse 2s infinite;
-    }
-
-    .beach {
-      fill: #38bdf8;
-    }
-
-    @keyframes pulse {
-      0% { r: 6; opacity: 0.7; }
-      50% { r: 9; opacity: 1; }
-      100% { r: 6; opacity: 0.7; }
-    }
-
-    .label {
-      font-size: 12px;
-      fill: #fff;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    g:hover .label {
-      opacity: 1;
-    }
-
-    /* CTA */
-    .cta {
-      position: absolute;
-      bottom: 30px;
-      right: 30px;
-      background: #22c55e;
-      padding: 14px 20px;
-      border-radius: 40px;
-      font-weight: 600;
-      color: #022c22;
-      text-decoration: none;
-    }
-
-  </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Custom Map Styles */
+        .maharashtra-path {
+            fill: #e5e7eb;
+            stroke: #9ca3af;
+            stroke-width: 1.5;
+            transition: all 0.5s ease;
+        }
+        .maharashtra-path:hover {
+            fill: #d1d5db;
+        }
+    </style>
 </head>
-<body>
+<body class="bg-stone-50 text-gray-900 overflow-x-hidden">
+    <div id="root"></div>
 
-<header>
-  <h1>Konkan Escapes</h1>
-  <p>Explore forts & beaches of Maharashtra</p>
-</header>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { motion, AnimatePresence } = window.Motion;
+        
+        // --- DATA: The Heart of the App ---
+        const locations = [
+            {
+                id: 'raigad',
+                name: "Raigad Fort",
+                type: "fort",
+                coords: { top: "45%", left: "35%" }, // Approximate position on map
+                tagline: "The Capital of Swarajya",
+                image: "https://images.unsplash.com/photo-1597034954492-36526ebc8f62?q=80&w=2600&auto=format&fit=crop",
+                history: "Raigad is a hill fort situated in Mahad, Raigad district of Maharashtra, India. It was the capital of the Maratha Empire under the rule of Chhatrapati Shivaji Maharaj. The fort rises 820 metres (2,700 ft) above sea level in the Sahyadri mountain range. There are approximately 1737 steps leading to the fort.",
+                trekPlan: {
+                    difficulty: "Moderate",
+                    duration: "2.5 Hours (Climb)",
+                    bestTime: "June to Feb",
+                    itinerary: [
+                        "05:00 AM: Start from Base Village (Pachad)",
+                        "07:30 AM: Reach Maha Darwaja",
+                        "08:00 AM: Darshan of Shivaji Maharaj Samadhi",
+                        "10:00 AM: Explore Takmak Tok & Market",
+                        "01:00 PM: Descent / Ropeway down"
+                    ]
+                }
+            },
+            {
+                id: 'tarkarli',
+                name: "Tarkarli Beach",
+                type: "beach",
+                coords: { top: "85%", left: "38%" },
+                tagline: "The Coral Coast",
+                image: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?q=80&w=2574&auto=format&fit=crop",
+                history: "Tarkarli is a village in Malvan taluka in Sindhudurg district. Known for its white sands and clear waters, it is the hub of Scuba diving in Maharashtra. The nearby Sindhudurg Fort, built by Shivaji Maharaj in the middle of the sea, stands as a sentinel of the coast.",
+                trekPlan: {
+                    difficulty: "Easy (Leisure)",
+                    duration: "3 Days Trip",
+                    bestTime: "Oct to May",
+                    itinerary: [
+                        "Day 1: Arrival & Sunset at Devbagh Sangam",
+                        "Day 2: Scuba Diving & Sindhudurg Fort Tour",
+                        "Day 3: Water Sports & Dolphin Safari"
+                    ]
+                }
+            },
+            {
+                id: 'harihar',
+                name: "Harihar Fort",
+                type: "fort",
+                coords: { top: "20%", left: "40%" },
+                tagline: "The Vertical Steps",
+                image: "https://images.unsplash.com/photo-1643194018828-569d6614457e?q=80&w=2670&auto=format&fit=crop",
+                history: "Harihar Fort lies in the Trimbakeshwar range. It is famous for its 80-degree vertical rock-cut steps. It was built to look over the trade route through Gonda Ghat. It was surrendered to the British in 1818.",
+                trekPlan: {
+                    difficulty: "Hard (Technical)",
+                    duration: "3 Hours",
+                    bestTime: "Winter",
+                    itinerary: [
+                        "06:00 AM: Base Village (Nirgudpada)",
+                        "08:00 AM: Reach the Vertical Steps",
+                        "09:30 AM: Summit & Plateau Exploration",
+                        "12:00 PM: Lunch at Base"
+                    ]
+                }
+            },
+            {
+                id: 'rajmachi',
+                name: "Rajmachi",
+                type: "fort",
+                coords: { top: "35%", left: "38%" }, // Lonavala region
+                tagline: "The Fireflies Sanctuary",
+                image: "https://images.unsplash.com/photo-1533240332313-0db49b459ad6?q=80&w=2574&auto=format&fit=crop",
+                history: "Rajmachi is famous for the pre-monsoon fireflies festival. It consists of two twin fortresses Shriwardhan and Manaranjan. It is a very famous trek in the Lonavala region.",
+                trekPlan: {
+                    difficulty: "Easy to Moderate",
+                    duration: "4 Hours (Long Walk)",
+                    bestTime: "Monsoon & June (Fireflies)",
+                    itinerary: [
+                        "Day 1: Night Trek start from Lonavala",
+                        "Day 1: Camping at Udhewadi Village",
+                        "Day 2: Sunrise at Shrivardhan Fort",
+                        "Day 2: Return via Kondhane Caves"
+                    ]
+                }
+            }
+        ];
 
-<div class="map-wrapper">
+        // --- COMPONENTS ---
 
-<svg viewBox="0 0 500 600">
+        // 1. The Map Component
+        const MaharashtraMap = ({ onLocationClick }) => {
+            return (
+                <div className="relative w-full h-[600px] md:h-[700px] bg-blue-50/50 rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+                    {/* Background Texture */}
+                    <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/aged-paper.png')]"></div>
+                    
+                    {/* Simplified SVG Map Representation */}
+                    <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0 drop-shadow-xl" preserveAspectRatio="none">
+                        {/* Abstract shape representing MH coastline and landmass */}
+                        <path d="M 30,10 L 60,15 L 75,30 L 70,60 L 40,90 L 30,80 L 25,50 Z" className="fill-stone-200 stroke-stone-300 stroke-2" />
+                        {/* Coastline */}
+                        <path d="M 30,10 Q 25,30 25,50 T 30,80" fill="none" stroke="#006994" strokeWidth="1" strokeDasharray="2 2" />
+                    </svg>
 
-  <!-- Maharashtra (stylized) -->
-  <path class="maha" d="M120 50 L320 80 L380 200 L350 350 L280 480 L180 520 L90 420 L60 300 L90 160 Z"/>
+                    {/* Dynamic Pins */}
+                    {locations.map((loc) => (
+                        <motion.button
+                            key={loc.id}
+                            className="absolute transform -translate-x-1/2 -translate-y-1/2 group z-10"
+                            style={{ top: loc.coords.top, left: loc.coords.left }}
+                            onClick={() => onLocationClick(loc)}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            whileHover={{ scale: 1.2 }}
+                        >
+                            {/* Pulse Effect */}
+                            <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${loc.type === 'fort' ? 'bg-orange-400' : 'bg-blue-400'}`}></span>
+                            
+                            {/* The Pin Icon */}
+                            <div className={`relative inline-flex items-center justify-center w-8 h-8 md:w-12 md:h-12 text-white rounded-full shadow-lg border-2 border-white ${loc.type === 'fort' ? 'bg-orange-600' : 'bg-blue-600'}`}>
+                                <i data-lucide={loc.type === 'fort' ? "castle" : "waves"} className="w-4 h-4 md:w-6 md:h-6"></i>
+                            </div>
 
-  <!-- Raigad Fort -->
-  <g onclick="goTo('raigad.html')">
-    <circle class="marker" cx="240" cy="260" r="6"/>
-    <text class="label" x="250" y="255">Raigad Fort</text>
-  </g>
+                            {/* Tooltip */}
+                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-max px-3 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                {loc.name}
+                            </div>
+                        </motion.button>
+                    ))}
 
-  <!-- Rajgad -->
-  <g onclick="goTo('rajgad.html')">
-    <circle class="marker" cx="220" cy="300" r="6"/>
-    <text class="label" x="230" y="295">Rajgad</text>
-  </g>
+                    {/* Floating Clouds Animation */}
+                    <motion.div 
+                        className="absolute top-10 left-0 text-white/40"
+                        animate={{ x: [0, 100, 0] }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    >
+                        <i data-lucide="cloud" size={64}></i>
+                    </motion.div>
+                     <motion.div 
+                        className="absolute top-40 right-10 text-white/40"
+                        animate={{ x: [0, -50, 0] }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                    >
+                        <i data-lucide="cloud" size={48}></i>
+                    </motion.div>
+                </div>
+            );
+        };
 
-  <!-- Sinhagad -->
-  <g onclick="goTo('sinhagad.html')">
-    <circle class="marker" cx="210" cy="280" r="6"/>
-    <text class="label" x="220" y="275">Sinhagad</text>
-  </g>
+        // 2. The Detail Page Component
+        const DetailPage = ({ location, onBack }) => {
+            return (
+                <motion.div 
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 100 }}
+                    className="min-h-screen bg-white relative z-20"
+                >
+                    {/* Parallax Hero */}
+                    <div className="relative h-[50vh] overflow-hidden">
+                        <img src={location.image} alt={location.name} className="w-full h-full object-cover fixed top-0 left-0 -z-10" />
+                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-4">
+                            <motion.h1 
+                                initial={{ y: 20, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                className="font-serif text-5xl md:text-7xl text-white font-bold mb-2"
+                            >
+                                {location.name}
+                            </motion.h1>
+                            <p className="text-orange-300 text-xl tracking-widest uppercase font-bold">{location.tagline}</p>
+                        </div>
+                        <button 
+                            onClick={onBack}
+                            className="absolute top-6 left-6 bg-white/20 backdrop-blur-md hover:bg-white text-white hover:text-gray-900 p-3 rounded-full transition-all border border-white/30"
+                        >
+                            <i data-lucide="arrow-left" size={24}></i>
+                        </button>
+                    </div>
 
-  <!-- Tarkarli Beach -->
-  <g onclick="goTo('tarkarli.html')">
-    <circle class="marker beach" cx="130" cy="380" r="6"/>
-    <text class="label" x="140" y="375">Tarkarli Beach</text>
-  </g>
+                    {/* Content Container */}
+                    <div className="bg-white relative rounded-t-[3rem] -mt-10 p-6 md:p-12 shadow-2xl min-h-screen">
+                        <div className="max-w-4xl mx-auto grid md:grid-cols-3 gap-12">
+                            
+                            {/* Left Col: History */}
+                            <div className="md:col-span-2 space-y-8">
+                                <div>
+                                    <h2 className="font-serif text-3xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                                        <i data-lucide="scroll" className="text-orange-600"></i> History
+                                    </h2>
+                                    <p className="text-gray-600 leading-relaxed text-lg">
+                                        {location.history}
+                                    </p>
+                                </div>
 
-  <!-- Alibaug -->
-  <g onclick="goTo('alibaug.html')">
-    <circle class="marker beach" cx="160" cy="340" r="6"/>
-    <text class="label" x="170" y="335">Alibaug</text>
-  </g>
+                                <div>
+                                    <h2 className="font-serif text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                                        <i data-lucide="map" className="text-orange-600"></i> The Plan
+                                    </h2>
+                                    <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100">
+                                        <ul className="space-y-4">
+                                            {location.trekPlan.itinerary.map((step, idx) => (
+                                                <li key={idx} className="flex gap-4 items-start">
+                                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">
+                                                        {idx + 1}
+                                                    </div>
+                                                    <p className="text-gray-700 font-medium">{step}</p>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
 
-</svg>
+                            {/* Right Col: Info Card & Booking */}
+                            <div className="md:col-span-1">
+                                <div className="sticky top-8 bg-gray-900 text-white p-8 rounded-3xl shadow-xl">
+                                    <h3 className="font-serif text-2xl font-bold mb-6">Trip Details</h3>
+                                    
+                                    <div className="space-y-6 mb-8">
+                                        <div>
+                                            <p className="text-gray-400 text-sm uppercase">Difficulty</p>
+                                            <p className="text-lg font-bold flex items-center gap-2">
+                                                <i data-lucide="bar-chart" size={16} className="text-orange-500"></i> {location.trekPlan.difficulty}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-400 text-sm uppercase">Duration</p>
+                                            <p className="text-lg font-bold flex items-center gap-2">
+                                                <i data-lucide="clock" size={16} className="text-orange-500"></i> {location.trekPlan.duration}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-400 text-sm uppercase">Best Time</p>
+                                            <p className="text-lg font-bold flex items-center gap-2">
+                                                <i data-lucide="sun" size={16} className="text-orange-500"></i> {location.trekPlan.bestTime}
+                                            </p>
+                                        </div>
+                                    </div>
 
-</div>
+                                    <a 
+                                        href={`https://wa.me/919307797490?text=I am interested in ${location.name}`}
+                                        target="_blank"
+                                        className="block w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-center transition-colors flex items-center justify-center gap-2"
+                                    >
+                                        <i data-lucide="message-circle"></i> Plan Now
+                                    </a>
+                                    <p className="text-center text-xs text-gray-500 mt-3">Instant confirmation via WhatsApp</p>
+                                </div>
+                            </div>
 
-<a class="cta" href="#">Plan My Trek</a>
+                        </div>
+                    </div>
+                </motion.div>
+            );
+        };
 
-<script>
-  function goTo(page) {
-    window.location.href = page;
-  }
-</script>
+        // --- MAIN APP ---
+        const App = () => {
+            const [selectedLocation, setSelectedLocation] = useState(null);
 
+            // Re-run icons when views change
+            useEffect(() => {
+                lucide.createIcons();
+            });
+
+            return (
+                <div className="font-sans min-h-screen bg-stone-50">
+                    <AnimatePresence mode="wait">
+                        {/* VIEW 1: LANDING & MAP */}
+                        {!selectedLocation && (
+                            <motion.div 
+                                key="landing"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                className="max-w-7xl mx-auto px-4 py-8"
+                            >
+                                {/* Header */}
+                                <header className="text-center mb-12 mt-8">
+                                    <h1 className="font-serif text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+                                        Explore <span className="text-orange-600">Maharashtra</span>
+                                    </h1>
+                                    <p className="text-xl text-gray-500 max-w-2xl mx-auto">
+                                        Click on the interactive map below to discover the history and plan your next adventure to the great forts and beaches.
+                                    </p>
+                                </header>
+
+                                {/* The Interactive Map Container */}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                                    <div className="lg:col-span-8">
+                                        <MaharashtraMap onLocationClick={setSelectedLocation} />
+                                    </div>
+                                    
+                                    {/* Sidebar Legend */}
+                                    <div className="lg:col-span-4 space-y-6">
+                                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-stone-100">
+                                            <h3 className="font-bold text-lg mb-4">Legend</h3>
+                                            <div className="flex items-center gap-4 mb-3">
+                                                <div className="w-8 h-8 rounded-full bg-orange-600 flex items-center justify-center text-white"><i data-lucide="castle" size={16}></i></div>
+                                                <span>Historic Forts</span>
+                                            </div>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white"><i data-lucide="waves" size={16}></i></div>
+                                                <span>Beaches & Diving</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="bg-orange-50 p-6 rounded-2xl border border-orange-100">
+                                            <h3 className="font-serif text-xl font-bold text-orange-800 mb-2">Did You Know?</h3>
+                                            <p className="text-orange-700 italic">"Maharashtra has over 350 forts, the highest number in any state in India. Most were built by Chhatrapati Shivaji Maharaj."</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* VIEW 2: DETAILS PAGE */}
+                        {selectedLocation && (
+                            <DetailPage 
+                                key="detail"
+                                location={selectedLocation} 
+                                onBack={() => setSelectedLocation(null)} 
+                            />
+                        )}
+                    </AnimatePresence>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
 </body>
 </html>
