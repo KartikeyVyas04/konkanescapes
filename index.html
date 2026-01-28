@@ -1,79 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Konkan Escapes | Treks & Weekend Getaways</title>
+  <meta charset="UTF-8">
+  <title>Konkan Escapes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --primary: #0f766e;
-      --secondary: #0d9488;
-      --light-bg: #f5f5f4;
-      --dark: #0f172a;
-      --text: #334155;
-      --white: #ffffff;
+      --primary: #1b7f7a;
+      --primary-dark: #156e6a;
+      --bg-light: #f6efe6;
+      --bg-white: #ffffff;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --radius: 14px;
     }
 
     * {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
       font-family: 'Inter', sans-serif;
     }
 
     body {
-      color: var(--text);
+      background: var(--bg-light);
+      color: var(--text-dark);
       line-height: 1.6;
     }
 
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
+    a { text-decoration: none; color: inherit; }
 
-    /* NAVBAR */
+    /* ================= NAVBAR ================= */
     header {
       position: fixed;
-      width: 100%;
       top: 0;
-      background: rgba(0,0,0,0.4);
-      color: #fff;
-      z-index: 100;
+      width: 100%;
+      z-index: 99;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(6px);
     }
 
     .nav {
       max-width: 1200px;
       margin: auto;
+      padding: 16px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 15px 20px;
+      color: #fff;
     }
 
     .nav ul {
       display: flex;
-      gap: 20px;
+      gap: 28px;
       list-style: none;
       font-size: 14px;
+      align-items: center;
     }
 
-    .btn {
+    .nav .cta {
       background: var(--primary);
-      color: #fff;
-      padding: 10px 16px;
+      padding: 8px 14px;
       border-radius: 6px;
-      font-size: 14px;
       font-weight: 600;
     }
 
-    /* HERO */
+    /* ================= HERO ================= */
     .hero {
       height: 100vh;
-      background: linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
-      url("https://images.unsplash.com/photo-1500530855697-b586d89ba3ee") center/cover;
+      background:
+        linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
+        url("https://images.unsplash.com/photo-1507525428034-b723cf961d3e") center/cover;
       display: flex;
       align-items: center;
       text-align: center;
@@ -81,40 +81,44 @@
       padding: 0 20px;
     }
 
-    .hero-content {
-      max-width: 800px;
+    .hero-inner {
+      max-width: 850px;
       margin: auto;
     }
 
     .hero h1 {
-      font-size: 42px;
-      margin-bottom: 15px;
+      font-size: 46px;
+      font-weight: 700;
+      margin-bottom: 16px;
     }
 
     .hero p {
       font-size: 18px;
-      margin-bottom: 30px;
+      opacity: .95;
+      margin-bottom: 32px;
     }
 
-    .hero-buttons {
+    .hero-actions {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      gap: 16px;
       flex-wrap: wrap;
     }
 
-    .btn-outline {
-      background: transparent;
-      border: 2px solid #fff;
-      padding: 10px 16px;
-      border-radius: 6px;
-      color: #fff;
+    .btn {
+      padding: 12px 20px;
+      border-radius: 8px;
       font-weight: 600;
+      font-size: 14px;
+      display: inline-block;
     }
 
-    /* SECTIONS */
+    .btn.primary { background: var(--primary); color: #fff; }
+    .btn.outline { border: 2px solid #fff; color: #fff; }
+
+    /* ================= SECTION BASE ================= */
     section {
-      padding: 80px 20px;
+      padding: 90px 24px;
     }
 
     .container {
@@ -123,50 +127,54 @@
     }
 
     h2 {
+      font-size: 32px;
       text-align: center;
-      font-size: 30px;
       margin-bottom: 10px;
-      color: var(--dark);
     }
 
-    .sub {
+    .subtitle {
       text-align: center;
-      margin-bottom: 40px;
-      color: #64748b;
+      color: var(--text-muted);
+      margin-bottom: 48px;
     }
 
-    /* EXPERIENCE CARDS */
-    .cards {
+    /* ================= EXPERIENCES ================= */
+    .experience-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 26px;
     }
 
-    .card {
-      background: var(--white);
-      padding: 30px;
-      border-radius: 12px;
+    .experience-card {
+      background: var(--bg-white);
+      padding: 28px;
+      border-radius: var(--radius);
       text-align: center;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      box-shadow: 0 12px 30px rgba(0,0,0,.05);
     }
 
-    .card h3 {
-      margin-bottom: 10px;
-      color: var(--dark);
+    .experience-card h3 {
+      margin-bottom: 8px;
+      font-size: 16px;
     }
 
-    /* FEATURED */
-    .featured {
+    .experience-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ================= FEATURED ================= */
+    .featured-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 28px;
     }
 
     .featured-card {
-      background: white;
-      border-radius: 12px;
+      background: var(--bg-white);
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      box-shadow: 0 14px 32px rgba(0,0,0,.06);
     }
 
     .featured-card img {
@@ -175,79 +183,155 @@
       object-fit: cover;
     }
 
-    .featured-card .content {
+    .featured-content {
       padding: 20px;
     }
 
     .price {
       float: right;
-      background: var(--secondary);
-      color: white;
+      background: var(--primary);
+      color: #fff;
       padding: 4px 10px;
       border-radius: 6px;
       font-size: 12px;
     }
 
-    /* WHY */
-    .why {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 30px;
+    .featured-content h4 {
+      margin-bottom: 6px;
+    }
+
+    .featured-content p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .featured-content .btn {
+      background: var(--primary-dark);
+      color: white;
+      width: 100%;
       text-align: center;
     }
 
-    /* HOW IT WORKS */
+    /* ================= WHY ================= */
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px;
+      text-align: center;
+    }
+
+    .why-grid h4 { margin-bottom: 6px; }
+
+    .why-grid p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ================= HOW IT WORKS ================= */
     .steps {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 30px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
       text-align: center;
     }
 
-    /* TESTIMONIALS */
-    .testimonials {
+    .step-circle {
+      width: 46px;
+      height: 46px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-weight: 700;
+    }
+
+    /* ================= TESTIMONIALS ================= */
+    .testimonial-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 26px;
     }
 
     .testimonial {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+      background: var(--bg-white);
+      padding: 26px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 24px rgba(0,0,0,.05);
     }
 
-    /* CTA */
-    .cta {
-      background: linear-gradient(135deg, #0f766e, #0d9488);
+    .stars { color: #f59e0b; margin-bottom: 8px; }
+
+    .testimonial p {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .testimonial span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ================= CTA ================= */
+    .final-cta {
+      background: linear-gradient(135deg, #1b7f7a, #158a85);
       color: white;
-      text-align: center;
-      padding: 80px 20px;
+      padding: 90px 24px;
     }
 
-    .cta form {
-      max-width: 400px;
-      margin: 30px auto 0;
+    .cta-grid {
+      max-width: 1000px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
     }
 
-    input, textarea {
+    .cta-box {
+      background: rgba(255,255,255,.12);
+      padding: 28px;
+      border-radius: var(--radius);
+    }
+
+    .cta-box input,
+    .cta-box textarea {
       width: 100%;
       padding: 12px;
-      margin-bottom: 12px;
       border-radius: 6px;
       border: none;
+      margin-bottom: 10px;
     }
 
-    /* FOOTER */
+    .cta-box button {
+      width: 100%;
+      background: #fff;
+      color: var(--primary-dark);
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* ================= FOOTER ================= */
     footer {
       background: #0f172a;
       color: #cbd5f5;
-      padding: 40px 20px;
+      padding: 40px 24px;
       font-size: 14px;
     }
 
-    /* WHATSAPP */
+    .footer-grid {
+      max-width: 1200px;
+      margin: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 30px;
+    }
+
+    /* ================= WHATSAPP ================= */
     .whatsapp {
       position: fixed;
       bottom: 20px;
@@ -270,20 +354,20 @@
     <strong>Konkan Escapes</strong>
     <ul>
       <li>Experiences</li>
-      <li>Featured Treks</li>
+      <li>Featured Trips</li>
       <li>How It Works</li>
-      <li><a class="btn">Plan My Trek</a></li>
+      <li><span class="cta">Plan My Trip</span></li>
     </ul>
   </div>
 </header>
 
 <section class="hero">
-  <div class="hero-content">
-    <h1>Guided Treks & Weekend Escapes Across Maharashtra</h1>
-    <p>From iconic Sahyadri forts to scenic Konkan trails — expertly led treks designed for every explorer.</p>
-    <div class="hero-buttons">
-      <a class="btn">Explore Treks</a>
-      <a class="btn-outline">Plan My Trek</a>
+  <div class="hero-inner">
+    <h1>Curated Escapes Across Konkan & Maharashtra</h1>
+    <p>From serene coastal stays to Sahyadri adventures — thoughtfully planned getaways for every kind of traveler.</p>
+    <div class="hero-actions">
+      <a class="btn primary">Explore Experiences</a>
+      <a class="btn outline">Plan My Trip</a>
     </div>
   </div>
 </section>
@@ -291,48 +375,61 @@
 <section>
   <div class="container">
     <h2>Experiences We Offer</h2>
-    <p class="sub">Carefully curated trekking and outdoor experiences</p>
+    <p class="subtitle">Choose from our curated collection of travel experiences</p>
 
-    <div class="cards">
-      <div class="card"><h3>Fort Treks & Trails</h3><p>Guided Sahyadri treks with local experts.</p></div>
-      <div class="card"><h3>Monsoon & Night Treks</h3><p>Weekend-friendly adventures.</p></div>
-      <div class="card"><h3>Konkan Trail Getaways</h3><p>Coastal treks blended with leisure.</p></div>
-      <div class="card"><h3>Camping Experiences</h3><p>Nature-first overnight stays.</p></div>
-      <div class="card"><h3>Villas & Homestays</h3><p>Comfort stays for trek groups.</p></div>
+    <div class="experience-grid">
+      <div class="experience-card"><h3>Konkan Getaways</h3><p>Handpicked coastal experiences</p></div>
+      <div class="experience-card"><h3>Fort Treks & Trails</h3><p>Guided Sahyadri fort treks</p></div>
+      <div class="experience-card"><h3>Camping Experiences</h3><p>Nature-first overnight camps</p></div>
+      <div class="experience-card"><h3>Villas & Homestays</h3><p>Verified stays for groups</p></div>
+      <div class="experience-card"><h3>Group Trips & Events</h3><p>Corporate & private trips</p></div>
     </div>
   </div>
 </section>
 
-<section class="light-bg">
+<section>
   <div class="container">
-    <h2>Featured Treks</h2>
-    <p class="sub">Handpicked adventures</p>
+    <h2>Featured Escapes</h2>
+    <p class="subtitle">Handpicked experiences designed for unforgettable memories</p>
 
-    <div class="featured">
+    <div class="featured-grid">
+      <div class="featured-card">
+        <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee">
+        <div class="featured-content">
+          <span class="price">₹8,999</span>
+          <h4>Tarkarli Beach Escape</h4>
+          <p>3 Days / 2 Nights</p>
+          <a class="btn">View Details</a>
+        </div>
+      </div>
+
       <div class="featured-card">
         <img src="https://images.unsplash.com/photo-1549880338-65ddcdfd017b">
-        <div class="content">
+        <div class="featured-content">
           <span class="price">₹4,499</span>
-          <h3>Raigad Fort Weekend Trek</h3>
+          <h4>Raigad Fort Weekend Trek</h4>
           <p>2 Days / 1 Night</p>
+          <a class="btn">View Details</a>
         </div>
       </div>
 
       <div class="featured-card">
         <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429">
-        <div class="content">
-          <span class="price">₹2,999</span>
-          <h3>Rajgad–Torna Trek</h3>
-          <p>1 Day</p>
+        <div class="featured-content">
+          <span class="price">₹12,999</span>
+          <h4>Luxury Villa Stay in Alibaug</h4>
+          <p>2 Days / 1 Night</p>
+          <a class="btn">View Details</a>
         </div>
       </div>
 
       <div class="featured-card">
         <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470">
-        <div class="content">
-          <span class="price">₹3,999</span>
-          <h3>Harishchandragad Night Trek</h3>
-          <p>Overnight</p>
+        <div class="featured-content">
+          <span class="price">₹2,999</span>
+          <h4>Lakeside Camping Near Mumbai</h4>
+          <p>1 Day / 1 Night</p>
+          <a class="btn">View Details</a>
         </div>
       </div>
     </div>
@@ -341,30 +438,89 @@
 
 <section>
   <div class="container">
-    <h2>How It Works</h2>
-    <div class="steps">
-      <div><h3>1. Choose Trek</h3><p>Select your fort & difficulty.</p></div>
-      <div><h3>2. Book Easily</h3><p>Quick WhatsApp booking.</p></div>
-      <div><h3>3. Trek & Explore</h3><p>We handle the logistics.</p></div>
+    <h2>Why Konkan Escapes</h2>
+    <p class="subtitle">We’re committed to creating memorable experiences you can trust</p>
+
+    <div class="why-grid">
+      <div><h4>Curated Experiences</h4><p>Only trips we’d take ourselves</p></div>
+      <div><h4>Local Expertise</h4><p>On-ground partners & guides</p></div>
+      <div><h4>Safety First</h4><p>Clear itineraries & protocols</p></div>
+      <div><h4>Transparent Pricing</h4><p>No hidden costs</p></div>
     </div>
   </div>
 </section>
 
-<section class="cta">
-  <h2>Your Next Trek Is Just a Message Away</h2>
-  <p>Tell us your preferred fort or dates.</p>
+<section>
+  <div class="container">
+    <h2>How It Works</h2>
+    <p class="subtitle">Three simple steps to your perfect getaway</p>
 
-  <form>
-    <input type="text" placeholder="Your Name">
-    <input type="tel" placeholder="Phone Number">
-    <textarea placeholder="Tell us your trek idea"></textarea>
-    <button class="btn">Send Message</button>
-  </form>
+    <div class="steps">
+      <div><div class="step-circle">1</div><h4>Choose Your Escape</h4><p>Explore trips or tell us your plan</p></div>
+      <div><div class="step-circle">2</div><h4>Book Easily</h4><p>Quick WhatsApp or form booking</p></div>
+      <div><div class="step-circle">3</div><h4>Relax & Escape</h4><p>We handle the planning</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>What Our Travelers Say</h2>
+    <p class="subtitle">Real experiences from real travelers</p>
+
+    <div class="testimonial-grid">
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>Perfectly planned trek and smooth coordination.</p>
+        <span>Ankit Sharma, Mumbai</span>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>Great guides and beautiful locations.</p>
+        <span>Priya Deshmukh, Pune</span>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <p>Effortless booking and amazing experience.</p>
+        <span>Rahul Patil, Mumbai</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="cta-grid">
+    <div class="cta-box">
+      <h3>Quick Contact</h3>
+      <p>Chat with us instantly on WhatsApp</p>
+      <br>
+      <a class="btn primary" href="#">Chat on WhatsApp</a>
+    </div>
+
+    <div class="cta-box">
+      <h3>Send Us a Message</h3>
+      <input placeholder="Your Name">
+      <input placeholder="Phone Number">
+      <textarea placeholder="Tell us what you need"></textarea>
+      <button>Send Message</button>
+    </div>
+  </div>
 </section>
 
 <footer>
-  <div class="container">
-    <p>© 2026 Konkan Escapes. All rights reserved.</p>
+  <div class="footer-grid">
+    <div>
+      <strong>Konkan Escapes</strong>
+      <p>Curated escapes across Konkan & Maharashtra.</p>
+    </div>
+    <div>
+      <strong>Quick Links</strong>
+      <p>Experiences<br>Featured Trips<br>How It Works</p>
+    </div>
+    <div>
+      <strong>Contact</strong>
+      <p>+91 90000 00000<br>info@konkanescapes.com</p>
+    </div>
   </div>
 </footer>
 
